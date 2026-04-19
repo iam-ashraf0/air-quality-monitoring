@@ -1,0 +1,719 @@
+/* Custom CSS for Air Quality Dashboard */
+
+/* Custom theme color variables based on Bootstrap theme */
+:root, [data-bs-theme="light"] {
+    /* Main Theme Variables */
+    --bg-color-primary: #f8f9fa;
+    --text-color-primary: #212529;
+    --card-bg-secondary: #ffffff;
+    --bs-primary: #007bff;
+    --text-muted-color: #6c757d;
+    --bs-border-color: #dee2e6;
+    --bs-border-color-rgb: 222, 226, 230;
+    --bs-primary-rgb: 0, 123, 255;
+    --bs-success-rgb: 25, 135, 84;
+    --bs-warning-rgb: 255, 193, 7;
+    --bs-danger-rgb: 220, 53, 69;
+    --bs-info-rgb: 13, 202, 240;
+    --bs-light-rgb: 248, 249, 250;
+    --bs-dark-rgb: 33, 37, 41;
+    --bs-secondary-rgb: 108, 117, 125;
+}
+
+[data-bs-theme="dark"] {
+    /* Main Theme Variables */
+    --bg-color-primary: #212529;
+    --text-color-primary: #f8f9fa;
+    --card-bg-secondary: #343a40;
+    --bs-primary: #17a2b8;
+    --text-muted-color: #adb5bd;
+    --bs-border-color: #495057;
+    --bs-border-color-rgb: 73, 80, 87;
+    --bs-primary-rgb: 23, 162, 184;
+    --bs-success-rgb: 25, 135, 84;
+    --bs-warning-rgb: 255, 193, 7;
+    --bs-danger-rgb: 220, 53, 69;
+    --bs-info-rgb: 13, 202, 240;
+    --bs-light-rgb: 248, 249, 250;
+    --bs-dark-rgb: 33, 37, 41;
+    --bs-secondary-rgb: 108, 117, 125;
+}
+
+/* Ensure body respects theme colors */
+body {
+    background-color: var(--bg-color-primary) !important;
+    color: var(--text-color-primary) !important;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Override card background to ensure visibility */
+.card {
+    background-color: var(--card-bg-secondary);
+    color: var(--text-color-primary);
+    border: 1px solid var(--bs-border-color);
+    transition: all 0.3s ease;
+}
+
+/* Fix for Muted Text Blending */
+.text-muted {
+    color: var(--text-muted-color) !important;
+}
+
+/* Navbar Brand Enhancement */
+.navbar-brand {
+    color: var(--text-color-primary) !important;
+    font-weight: 600;
+}
+
+.navbar-brand i {
+    color: var(--bs-primary);
+}
+
+.navbar-dark .navbar-brand {
+    color: white !important;
+}
+
+[data-bs-theme="light"] .navbar-dark {
+    --text-color-primary: #f8f9fa;
+}
+
+/* Theme Toggle Button Style */
+#theme-toggle[data-bs-theme="dark"] {
+    color: var(--text-color-primary) !important;
+    border-color: var(--text-color-primary) !important;
+}
+
+#theme-toggle[data-bs-theme="light"] {
+    color: #343a40 !important;
+    border-color: #343a40 !important;
+}
+
+/* AQI Display Styles */
+.aqi-display {
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    background: var(--card-bg-secondary);
+    border: 2px solid var(--bs-border-color);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.aqi-display:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* Card Hover Effects */
+.card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Enhanced card hover for sensor grid */
+.card.h-100 {
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.card.h-100:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Status Indicator Animation */
+.fas.fa-circle {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+/* Chart Container Styling */
+.chart-container {
+    position: relative;
+    margin: 0 auto;
+    min-height: 300px;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    background: var(--card-bg-secondary);
+}
+
+#aqiChart, #pollutantChart {
+    max-height: 300px;
+    width: 100% !important;
+}
+
+/* Alert Styling */
+.alert {
+    border-left: 4px solid currentColor;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.alert:hover {
+    transform: translateX(5px);
+}
+
+/* Responsive Typography */
+@media (max-width: 768px) {
+    .display-1 {
+        font-size: 3rem;
+    }
+    
+    .h3 {
+        font-size: 1.5rem;
+    }
+    
+    .chart-container {
+        min-height: 250px;
+        padding: 0.5rem;
+    }
+}
+
+/* Loading Spinner */
+.spinner-border {
+    color: var(--bs-primary);
+}
+
+/* Custom Button Styling */
+.btn-group .btn-check:checked + .btn {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: white;
+}
+
+.btn-group .btn {
+    min-width: 60px;
+    transition: all 0.3s ease;
+}
+
+/* Statistics Grid */
+.statistics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+/* Health Recommendation Alert */
+.alert-success {
+    background-color: rgba(var(--bs-success-rgb), 0.1);
+    border-color: rgba(var(--bs-success-rgb), 0.3);
+    color: var(--bs-success);
+}
+
+.alert-warning {
+    background-color: rgba(var(--bs-warning-rgb), 0.1);
+    border-color: rgba(var(--bs-warning-rgb), 0.3);
+    color: var(--bs-warning);
+}
+
+.alert-danger {
+    background-color: rgba(var(--bs-danger-rgb), 0.1);
+    border-color: rgba(var(--bs-danger-rgb), 0.3);
+    color: var(--bs-danger);
+}
+
+/* Custom Scrollbar for Charts */
+.chart-container::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.chart-container::-webkit-scrollbar-track {
+    background: rgba(128, 128, 128, 0.1);
+    border-radius: 3px;
+}
+
+.chart-container::-webkit-scrollbar-thumb {
+    background: rgba(128, 128, 128, 0.3);
+    border-radius: 3px;
+}
+
+.chart-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(128, 128, 128, 0.5);
+}
+
+/* Utility Classes */
+.text-gradient {
+    background: linear-gradient(45deg, var(--bs-primary), var(--bs-info));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Focus States */
+.btn:focus,
+.btn-check:focus + .btn {
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* Error States */
+.error-state {
+    color: var(--bs-danger);
+    background-color: rgba(var(--bs-danger-rgb), 0.1);
+    border: 1px solid rgba(var(--bs-danger-rgb), 0.3);
+    border-radius: 0.375rem;
+    padding: 1rem;
+}
+
+/* Success States */
+.success-state {
+    color: var(--bs-success);
+    background-color: rgba(var(--bs-success-rgb), 0.1);
+    border: 1px solid rgba(var(--bs-success-rgb), 0.3);
+    border-radius: 0.375rem;
+    padding: 1rem;
+}
+
+/* Custom Text Colors */
+.text-purple { color: #8f3f97; } 
+.text-danger { color: var(--bs-danger); }
+.text-warning { color: var(--bs-warning); }
+.text-success { color: var(--bs-success); }
+.text-info { color: var(--bs-info); }
+.text-primary { color: var(--bs-primary); }
+
+/* Dust Icon Styling */
+.fa-dust:before {
+    content: "🌫️";
+    font-style: normal;
+}
+
+/* Enhanced Sensor Card Layout */
+.sensor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+/* Responsive adjustments for sensor cards */
+@media (max-width: 768px) {
+    .sensor-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Better spacing for sensor values */
+.card-body .h4 {
+    margin-bottom: 0.25rem;
+}
+
+/* Improved card header alignment */
+.card-header.d-flex {
+    align-items: center;
+    background: linear-gradient(135deg, rgba(var(--bs-primary-rgb), 0.1), rgba(var(--bs-info-rgb), 0.05));
+    border-bottom: 2px solid rgba(var(--bs-primary-rgb), 0.2);
+    padding: 1rem 1.25rem;
+}
+
+/* Better icon sizing */
+.card-body .fa-2x {
+    font-size: 1.75em;
+}
+
+.sensor-item {
+    padding: 15px;
+    border-radius: 8px;
+    background-color: rgba(var(--bs-primary-rgb), 0.05);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.1);
+    transition: all 0.3s ease;
+    margin-bottom: 10px;
+}
+
+.sensor-item:hover {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.sensor-item h6 {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.sensor-item .h5 {
+    font-weight: 700;
+    color: var(--bs-primary);
+}
+
+/* Quick Stats Grid Improvements */
+.quick-stats-grid .card {
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.1);
+}
+
+.quick-stats-grid .card-body {
+    padding: 1.25rem;
+}
+
+.quick-stats-grid .h4 {
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.quick-stats-grid .text-muted {
+    font-size: 0.875rem;
+}
+
+/* Sensor value colors based on safety levels */
+.sensor-value-safe {
+    color: var(--bs-success);
+}
+
+.sensor-value-warning {
+    color: var(--bs-warning);
+}
+
+.sensor-value-danger {
+    color: var(--bs-danger);
+}
+
+/* Grid layout improvements for sensor cards */
+@media (max-width: 768px) {
+    .sensor-item {
+        padding: 12px;
+    }
+    
+    .sensor-item .h5 {
+        font-size: 1.1rem;
+    }
+    
+    .quick-stats-grid .col-md-4 {
+        margin-bottom: 15px;
+    }
+    
+    .card-body .h4 {
+        font-size: 1.5rem;
+    }
+    
+    .fa-2x {
+        font-size: 1.5em;
+    }
+}
+
+/* Additional responsive adjustments */
+@media (max-width: 576px) {
+    .quick-stats-grid .card-body {
+        padding: 1rem;
+    }
+    
+    .quick-stats-grid .h4 {
+        font-size: 1.25rem;
+    }
+}
+
+/* Animation for value updates */
+.sensor-value-update {
+    animation: highlightUpdate 1s ease-in-out;
+}
+
+@keyframes highlightUpdate {
+    0% {
+        background-color: rgba(var(--bs-primary-rgb), 0.2);
+        transform: scale(1);
+    }
+    50% {
+        background-color: rgba(var(--bs-primary-rgb), 0.4);
+        transform: scale(1.05);
+    }
+    100% {
+        background-color: transparent;
+        transform: scale(1);
+    }
+}
+
+/* Better spacing for the main layout */
+.container.my-4 {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+/* Enhanced footer styling */
+footer.bg-dark {
+    background: linear-gradient(135deg, var(--bs-dark), #2c3e50) !important;
+}
+
+/* Loading state improvements */
+.loading-state {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* Print styles for reports */
+@media print {
+    .card {
+        border: 1px solid #000 !important;
+        break-inside: avoid;
+    }
+    
+    .card-header {
+        background: #f8f9fa !important;
+        color: #000 !important;
+    }
+    
+    .btn-group,
+    #refresh-btn {
+        display: none !important;
+    }
+}
+
+/* Trend Analysis Styles */
+.trend-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.3);
+}
+
+.trend-item:last-child {
+    border-bottom: none;
+}
+
+.trend-label {
+    font-weight: 600;
+    color: var(--text-muted-color);
+}
+
+.trend-value {
+    font-weight: 700;
+    color: var(--bs-primary);
+}
+
+/* Trend direction colors */
+.trend-up {
+    color: var(--bs-danger) !important;
+}
+
+.trend-down {
+    color: var(--bs-success) !important;
+}
+
+.trend-stable {
+    color: var(--bs-warning) !important;
+}
+
+/* Status indicator colors */
+.status-good {
+    color: var(--bs-success) !important;
+}
+
+.status-moderate {
+    color: var(--bs-warning) !important;
+}
+
+.status-poor {
+    color: var(--bs-danger) !important;
+}
+
+/* Chart container improvements */
+.chart-container {
+    position: relative;
+    margin: 0 auto;
+    min-height: 300px;
+}
+
+/* Enhanced sensor value animations */
+.sensor-value-update {
+    animation: valuePulse 0.5s ease-in-out;
+}
+
+@keyframes valuePulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Trend cards specific styles */
+.card.bg-primary,
+.card.bg-info,
+.card.bg-warning,
+.card.bg-success,
+.card.bg-danger,
+.card.bg-secondary {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease;
+}
+
+.card.bg-primary:hover,
+.card.bg-info:hover,
+.card.bg-warning:hover,
+.card.bg-success:hover,
+.card.bg-danger:hover,
+.card.bg-secondary:hover {
+    transform: translateY(-2px);
+}
+
+/* Responsive improvements for trend section */
+@media (max-width: 768px) {
+    .trend-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .trend-value {
+        margin-top: 4px;
+    }
+    
+    .btn-group .btn {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* Alert container styling */
+#alert-container {
+    transition: all 0.3s ease-in-out;
+}
+
+/* Safety Level Styles */
+.safety-level {
+    padding: 15px;
+    border-radius: 8px;
+    background-color: rgba(var(--bs-light-rgb), 0.5);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.3);
+    transition: all 0.3s ease;
+}
+
+.safety-level:hover {
+    background-color: rgba(var(--bs-light-rgb), 0.7);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.safety-level h6 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--text-color-primary);
+}
+
+.progress {
+    height: 8px;
+    background-color: rgba(var(--bs-secondary-rgb), 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    transition: width 0.5s ease, background-color 0.3s ease;
+}
+
+/* Pollutant trend items */
+.trend-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.3);
+}
+
+.trend-item:last-child {
+    border-bottom: none;
+}
+
+.trend-label {
+    font-weight: 600;
+    color: var(--text-muted-color);
+    font-size: 0.9rem;
+}
+
+.trend-value {
+    font-weight: 700;
+    color: var(--bs-primary);
+    font-size: 0.9rem;
+}
+
+/* Responsive adjustments for pollutant section */
+@media (max-width: 768px) {
+    .safety-level {
+        margin-bottom: 15px;
+    }
+    
+    .trend-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .trend-value {
+        margin-top: 4px;
+    }
+    
+    .btn-group .btn {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .card-body .h3 {
+        font-size: 1.5rem;
+    }
+}
+
+/* Smooth transitions for all interactive elements */
+.btn, .card, .sensor-item, .trend-item, .safety-level {
+    transition: all 0.3s ease;
+}
+
+/* Custom scrollbar for webkit browsers */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(var(--bs-secondary-rgb), 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(var(--bs-secondary-rgb), 0.3);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(var(--bs-secondary-rgb), 0.5);
+}
+
+/* Focus styles for accessibility */
+a:focus, button:focus, .btn:focus {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: 2px;
+}
+
+/* High contrast support */
+@media (prefers-contrast: high) {
+    .card {
+        border: 2px solid var(--text-color-primary);
+    }
+    
+    .sensor-item {
+        border: 2px solid var(--bs-primary);
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .sensor-value-update {
+        animation: none;
+    }
+    
+    .fas.fa-circle {
+        animation: none;
+    }
+}

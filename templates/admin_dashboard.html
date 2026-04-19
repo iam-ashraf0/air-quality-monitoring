@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>Admin</h2>
+    <a href="#">Manage Users</a>
+    <a href="#">Departments</a>
+    <a href="#">Projects</a>
+    <a href="/logout">Logout</a>
+</div>
+
+<div class="main">
+    <h1>Welcome, {{ name }}</h1>
+
+    <div class="cards">
+        <div class="card">Total Students</div>
+        <div class="card">Total Guides</div>
+        <div class="card">Total Projects</div>
+    </div>
+</div>
+
+</body>
+</html>

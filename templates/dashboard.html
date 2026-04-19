@@ -1,0 +1,774 @@
+<!-- dashboard.html -->
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Air Quality Monitor{% endblock %}
+
+{% block content %}
+<!-- Add Alert Container at the top -->
+<div class="row">
+    <div class="col-12">
+        <div id="alert-container" class="alert alert-warning alert-dismissible fade show" style="display: none;">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <span id="alert-message"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </div>
+</div>
+
+<!-- Last Update Time -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted" id="last-update">Last updated: --</small>
+            <button id="refresh-btn" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-sync-alt me-1"></i>Refresh
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-header d-flex align-items-center">
+                <i class="fas fa-gauge-high me-2"></i>
+                <h5 class="mb-0">Current Air Quality Index</h5>
+            </div>
+            <div class="card-body text-center">
+                <div id="current-aqi-container">
+                    {% if latest_reading %}
+                    <div class="aqi-display" style="color: {{ latest_reading.aqi_color }};">
+                        <div class="display-1 fw-bold">{{ latest_reading.aqi }}</div>
+                        <div class="h4">{{ latest_reading.aqi_category }}</div>
+                    </div>
+                    {% else %}
+                    <div class="aqi-display text-muted">
+                        <div class="display-1 fw-bold">--</div>
+                        <div class="h4">No Data</div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="mt-3">
+                    <small class="text-muted" id="aqi-description">
+                        {% if latest_reading %}
+                        {{ latest_reading.health_recommendation }}
+                        {% else %}
+                        Waiting for sensor data...
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Summary -->
+    <div class="col-lg-8 mb-4">
+        <div class="row">
+            <!-- Particulate Matter Sensors -->
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h6 class="card-title text-muted mb-1">PM2.5</h6>
+                                <div class="h4 mb-0" id="pm25-value">{% if latest_reading %}{{ latest_reading.pm25 }}{% else %}--{% endif %}</div>
+                                <small class="text-muted">µg/m³</small>
+                            </div>
+                            <div class="text-primary"><i class="fas fa-smog fa-2x"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h6 class="card-title text-muted mb-1">PM10</h6>
+                                <div class="h4 mb-0" id="pm10-value">{% if latest_reading %}{{ latest_reading.pm10 }}{% else %}--{% endif %}</div>
+                                <small class="text-muted">µg/m³</small>
+                            </div>
+                            <div class="text-info"><i class="fas fa-cloud fa-2x"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h6 class="card-title text-muted mb-1">Dust (GP2Y)</h6>
+                                <div class="h4 mb-0" id="dust-value">{% if latest_reading %}{{ latest_reading.dust_gp2y }}{% else %}--{% endif %}</div>
+                                <small class="text-muted">mg/m³</small>
+                            </div>
+                            <div class="text-warning"><i class="fas fa-dust fa-2x"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gas Sensors -->
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h6 class="card-title text-muted mb-1">CO₂</h6>
+                                <div class="h4 mb-0" id="co2-value">{% if latest_reading %}{{ latest_reading.co2 }}{% else %}--{% endif %}</div>
+                                <small class="text-muted">ppm</small>
+                            </div>
+                            <div class="text-success"><i class="fas fa-industry fa-2x"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h6 class="card-title text-muted mb-1">CO</h6>
+                                <div class="h4 mb-0" id="co-value">{% if latest_reading %}{{ latest_reading.co }}{% else %}--{% endif %}</div>
+                                <small class="text-muted">ppm</small>
+                            </div>
+                            <div class="text-danger"><i class="fas fa-skull-crossbones fa-2x"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h6 class="card-title text-muted mb-1">NH₃</h6>
+                                <div class="h4 mb-0" id="nh3-value">{% if latest_reading %}{{ latest_reading.nh3 }}{% else %}--{% endif %}</div>
+                                <small class="text-muted">ppm</small>
+                            </div>
+                            <div class="text-purple"><i class="fas fa-flask fa-2x"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Air Quality Indices -->
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h6 class="card-title text-muted mb-1">VOC Index</h6>
+                                <div class="h4 mb-0" id="voc-value">{% if latest_reading %}{{ latest_reading.voc }}{% else %}--{% endif %}</div>
+                                <small class="text-muted">Index</small>
+                            </div>
+                            <div class="text-info"><i class="fas fa-leaf fa-2x"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h6 class="card-title text-muted mb-1">NOₓ Index</h6>
+                                <div class="h4 mb-0" id="nox-value">{% if latest_reading %}{{ latest_reading.nox }}{% else %}--{% endif %}</div>
+                                <small class="text-muted">Index</small>
+                            </div>
+                            <div class="text-warning"><i class="fas fa-industry fa-2x"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Environmental Sensors -->
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h6 class="card-title text-muted mb-1">Temperature</h6>
+                                <div class="h4 mb-0" id="temperature-value">{% if latest_reading %}{{ latest_reading.temperature }}{% else %}--{% endif %}</div>
+                                <small class="text-muted">°C</small>
+                            </div>
+                            <div class="text-danger"><i class="fas fa-thermometer-half fa-2x"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h6 class="card-title text-muted mb-1">Humidity</h6>
+                                <div class="h4 mb-0" id="humidity-display">{% if latest_reading %}{{ latest_reading.humidity }}%{% else %}--{% endif %}</div>
+                                <small class="text-muted">% RH</small>
+                            </div>
+                            <div class="text-primary"><i class="fas fa-tint fa-2x"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h6 class="card-title text-muted mb-1">Pressure</h6>
+                                <div class="h4 mb-0" id="pressure-display">{% if latest_reading %}{{ latest_reading.pressure }} hPa{% else %}--{% endif %}</div>
+                                <small class="text-muted">hPa</small>
+                            </div>
+                            <div class="text-success"><i class="fas fa-compress-alt fa-2x"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- All Sensors Grid -->
+<div class="row">
+    <!-- Particulate Matter Sensors -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex align-items-center">
+                <i class="fas fa-smog me-2"></i>
+                <h5 class="mb-0">Particulate Matter Sensors</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="sensor-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">PM2.5</h6>
+                                    <small class="text-muted">Fine particles</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="h5 mb-0" id="pm25-value-detailed">{% if latest_reading %}{{ latest_reading.pm25 }}{% else %}--{% endif %}</div>
+                                    <small class="text-muted">µg/m³</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="sensor-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">PM10</h6>
+                                    <small class="text-muted">Coarse particles</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="h5 mb-0" id="pm10-value-detailed">{% if latest_reading %}{{ latest_reading.pm10 }}{% else %}--{% endif %}</div>
+                                    <small class="text-muted">µg/m³</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="sensor-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Dust (GP2Y)</h6>
+                                    <small class="text-muted">Airborne dust</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="h5 mb-0" id="dust-value-detailed">{% if latest_reading %}{{ latest_reading.dust_gp2y }}{% else %}--{% endif %}</div>
+                                    <small class="text-muted">mg/m³</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gas Sensors -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex align-items-center">
+                <i class="fas fa-wind me-2"></i>
+                <h5 class="mb-0">Gas Sensors</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="sensor-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">CO₂</h6>
+                                    <small class="text-muted">Carbon Dioxide</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="h5 mb-0" id="co2-value-detailed">{% if latest_reading %}{{ latest_reading.co2 }}{% else %}--{% endif %}</div>
+                                    <small class="text-muted">ppm</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="sensor-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">CO</h6>
+                                    <small class="text-muted">Carbon Monoxide</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="h5 mb-0" id="co-value-detailed">{% if latest_reading %}{{ latest_reading.co }}{% else %}--{% endif %}</div>
+                                    <small class="text-muted">ppm</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="sensor-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">NH₃</h6>
+                                    <small class="text-muted">Ammonia</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="h5 mb-0" id="nh3-value-detailed">{% if latest_reading %}{{ latest_reading.nh3 }}{% else %}--{% endif %}</div>
+                                    <small class="text-muted">ppm</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Air Quality Indices -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex align-items-center">
+                <i class="fas fa-chart-line me-2"></i>
+                <h5 class="mb-0">Air Quality Indices</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="sensor-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">VOC Index</h6>
+                                    <small class="text-muted">Volatile Organic Compounds</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="h5 mb-0" id="voc-value-detailed">{% if latest_reading %}{{ latest_reading.voc }}{% else %}--{% endif %}</div>
+                                    <small class="text-muted">Index</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="sensor-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">NOₓ Index</h6>
+                                    <small class="text-muted">Nitrogen Oxides</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="h5 mb-0" id="nox-value-detailed">{% if latest_reading %}{{ latest_reading.nox }}{% else %}--{% endif %}</div>
+                                    <small class="text-muted">Index</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Environmental Conditions -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex align-items-center">
+                <i class="fas fa-thermometer-half me-2"></i>
+                <h5 class="mb-0">Environmental Conditions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="sensor-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Temperature</h6>
+                                    <small class="text-muted">Ambient temperature</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="h5 mb-0" id="temperature-value-detailed">{% if latest_reading %}{{ latest_reading.temperature }}{% else %}--{% endif %}</div>
+                                    <small class="text-muted">°C</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="sensor-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Humidity</h6>
+                                    <small class="text-muted">Relative humidity</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="h5 mb-0" id="humidity-value-detailed">{% if latest_reading %}{{ latest_reading.humidity }}{% else %}--{% endif %}</div>
+                                    <small class="text-muted">% RH</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="sensor-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">Pressure</h6>
+                                    <small class="text-muted">Atmospheric pressure</small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="h5 mb-0" id="pressure-value-detailed">{% if latest_reading %}{{ latest_reading.pressure }}{% else %}--{% endif %}</div>
+                                    <small class="text-muted">hPa</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AQI Trend Analysis & Forecast -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line me-2"></i>
+                    AQI Trend Analysis & Forecast
+                </h5>
+                <div class="btn-group" role="group">
+                    <input type="radio" class="btn-check" name="timeRange" id="hourly" value="hourly" checked>
+                    <label class="btn btn-outline-primary btn-sm" for="hourly">24H</label>
+                    
+                    <input type="radio" class="btn-check" name="timeRange" id="daily" value="daily">
+                    <label class="btn btn-outline-primary btn-sm" for="daily">7D</label>
+                    
+                    <input type="radio" class="btn-check" name="timeRange" id="weekly" value="weekly">
+                    <label class="btn btn-outline-primary btn-sm" for="weekly">30D</label>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Main AQI Chart -->
+                <div class="chart-container">
+                    <canvas id="aqiChart" height="120"></canvas>
+                </div>
+                
+                <!-- AQI Distribution Chart -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-chart-pie me-2"></i>AQI Distribution</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="aqiDistributionChart" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Pollutant Contribution</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="pollutantContributionChart" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pollutant Levels Section -->
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-area me-2"></i>
+                    Pollutant Levels Analysis
+                </h5>
+                
+            </div>
+            <div class="card-body">
+                <!-- Pollutant Summary Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">PM2.5 Level</h6>
+                                <div class="h3 mb-1" id="pm25-level">--</div>
+                                <small id="pm25-status">--</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">PM10 Level</h6>
+                                <div class="h3 mb-1" id="pm10-level">--</div>
+                                <small id="pm10-status">--</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">CO₂ Level</h6>
+                                <div class="h3 mb-1" id="co2-level">--</div>
+                                <small id="co2-status">--</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card bg-secondary text-white">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">Air Quality</h6>
+                                <div class="h3 mb-1" id="pollutant-aqi">--</div>
+                                <small id="pollutant-category">--</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Pollutant Chart -->
+                <div class="chart-container mb-4">
+                    <canvas id="pollutantChart" height="120"></canvas>
+                </div>
+
+                <!-- Pollutant Comparison Charts -->
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Pollutant Comparison</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="pollutantComparisonChart" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Pollutant Distribution</h6>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="pollutantDistributionChart" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pollutant Safety Levels -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Safety Levels & Guidelines</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="safety-level">
+                                            <h6>PM2.5 (µg/m³)</h6>
+                                            <div class="progress mb-2">
+                                                <div class="progress-bar bg-success" id="pm25-progress" style="width: 0%"></div>
+                                            </div>
+                                            <small class="text-muted">
+                                                Safe: &lt;12 | Moderate: 12-35 | Unhealthy: &gt;35
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="safety-level">
+                                            <h6>PM10 (µg/m³)</h6>
+                                            <div class="progress mb-2">
+                                                <div class="progress-bar bg-success" id="pm10-progress" style="width: 0%"></div>
+                                            </div>
+                                            <small class="text-muted">
+                                                Safe: &lt;54 | Moderate: 54-154 | Unhealthy: &gt;154
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="safety-level">
+                                            <h6>CO₂ (ppm)</h6>
+                                            <div class="progress mb-2">
+                                                <div class="progress-bar bg-success" id="co2-progress" style="width: 0%"></div>
+                                            </div>
+                                            <small class="text-muted">
+                                                Good: &lt;1000 | Moderate: 1000-2000 | Poor: &gt;2000
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pollutant Trends -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0"><i class="fas fa-trend-up me-2"></i>Pollutant Trends</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row" id="pollutant-trends-details">
+                                    <div class="col-md-6">
+                                        <div class="trend-item">
+                                            <span class="trend-label">Dominant Pollutant:</span>
+                                            <span class="trend-value" id="dominant-pollutant">--</span>
+                                        </div>
+                                        <div class="trend-item">
+                                            <span class="trend-label">PM2.5 Trend:</span>
+                                            <span class="trend-value" id="pm25-trend">--</span>
+                                        </div>
+                                        <div class="trend-item">
+                                            <span class="trend-label">PM10 Trend:</span>
+                                            <span class="trend-value" id="pm10-trend">--</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="trend-item">
+                                            <span class="trend-label">CO₂ Trend:</span>
+                                            <span class="trend-value" id="co2-trend">--</span>
+                                        </div>
+                                        <div class="trend-item">
+                                            <span class="trend-label">Peak Time:</span>
+                                            <span class="trend-value" id="pollutant-peak-time">--</span>
+                                        </div>
+                                        <div class="trend-item">
+                                            <span class="trend-label">Improvement:</span>
+                                            <span class="trend-value" id="pollutant-improvement">--</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    24-Hour Statistics
+                </h5>
+            </div>
+            <div class="card-body" id="statistics-container">
+                <div class="text-center text-muted">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading statistics...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-heart me-2"></i>
+                    Health Recommendations
+                </h5>
+            </div>
+            <div class="card-body" id="health-recommendations">
+                {% if latest_reading %}
+                <div class="alert {% if latest_reading.is_alert %}alert-warning{% else %}alert-success{% endif %}">
+                    <i class="fas fa-{{ 'exclamation-triangle' if latest_reading.is_alert else 'check-circle' }} me-2"></i>
+                    {{ latest_reading.health_recommendation }}
+                </div>
+                {% else %}
+                <p class="text-center text-muted">Awaiting initial sensor data to generate recommendations.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    System Status
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="text-muted">Total Records</div>
+                        <div class="h4" id="total-records">{{ total_records or 0 }}</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-muted">Data Collection</div>
+                        <div class="h4 text-success">
+                            <i class="fas fa-check-circle"></i> Active
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-muted">Update Frequency</div>
+                        <div class="h4">30 seconds</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-muted">Sensor Status</div>
+                        <div class="h4">
+                            <i class="fas fa-microchip text-success" id="sensor-status-icon"></i>
+                            <span id="sensor-status">Checking...</span>
+                        </div>
+                        <small class="text-muted" id="sensor-type"></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        if (document.getElementById('aqiChart')) { 
+            if (typeof window.initializeDashboard === 'function') {
+                window.initializeDashboard();
+            }
+        }
+    });
+</script>
+{% endblock %}

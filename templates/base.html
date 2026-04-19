@@ -1,0 +1,147 @@
+<!-- base.html-->
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Air Quality Monitor{% endblock %}</title>
+    
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    
+    <!-- Load reports CSS only on reports page -->
+    {% if request.endpoint == 'reports' %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/reports.css') }}">
+    {% endif %}
+    
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-wind me-2"></i>
+                Air Quality Monitor
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('manual_entry') }}">
+                            <i class="fas fa-keyboard me-1"></i>Manual Entry
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('reports') }}">
+                            <i class="fas fa-chart-bar me-1"></i>Reports
+                        </a>
+                    </li>
+                    
+                    <li class="nav-item mx-2">
+                        <button id="theme-toggle" class="btn btn-sm btn-outline-light" aria-label="Toggle theme">
+                            <i class="fas fa-moon" id="theme-icon"></i>
+                        </button>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <span class="nav-link text-muted">
+                            <i class="fas fa-server me-1"></i>
+                            <span id="status-indicator">Connecting...</span>
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div id="alert-container" class="container mt-3" style="display: none;">
+        <div class="alert alert-danger alert-dismissible" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Air Quality Alert!</strong>
+            <span id="alert-message"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </div>
+
+    <main class="container my-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-dark text-center text-muted py-3 mt-5">
+        <div class="container">
+            <small>
+                <i class="fas fa-leaf me-1"></i>
+                Air Quality Monitor - Flask & MySQL
+                <span class="mx-2">|</span>
+                <i class="fas fa-clock me-1"></i>
+                <span id="last-update">Never</span>
+            </small>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Load dashboard.js only on dashboard pages -->
+    {% if request.endpoint == 'index' %}
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+    {% endif %}
+    
+    <!-- Load reports.js only on reports pages -->
+    {% if request.endpoint == 'reports' %}
+    <script src="{{ url_for('static', filename='js/reports.js') }}"></script>
+    {% endif %}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleButton = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            const htmlElement = document.documentElement;
+
+            // Function to set the theme based on the preference
+            const setTheme = (theme) => {
+                htmlElement.setAttribute('data-bs-theme', theme);
+                localStorage.setItem('theme', theme);
+                if (theme === 'light') {
+                    themeIcon.className = 'fas fa-sun';
+                    toggleButton.className = 'btn btn-sm btn-outline-dark';
+                } else {
+                    themeIcon.className = 'fas fa-moon';
+                    toggleButton.className = 'btn btn-sm btn-outline-light';
+                }
+            };
+
+            // Get saved preference or use system preference/default dark
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                setTheme(savedTheme);
+            } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                // Initial load: respect OS preference if no preference is saved
+                setTheme('light');
+            } else {
+                setTheme('dark'); // Default theme
+            }
+
+            // Event listener for the button click
+            toggleButton.addEventListener('click', () => {
+                const currentTheme = htmlElement.getAttribute('data-bs-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                setTheme(newTheme);
+            });
+        });
+    </script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>
